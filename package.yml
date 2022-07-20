@@ -1,0 +1,62 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: 's3-lambda
+
+  '
+Parameters:
+  AppBucketName:
+    Type: String
+    Description: 'REQUIRED: Unique S3 bucket name to use for the app.'
+    Default: aws-report-gen-shashank-iam
+Resources:
+  ReportGenerator:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: s3://aws-lambda-code-location-shashank-iam/2cac7eb18064b60ddbfbd59d70c08eee
+      Handler: handler.Handler
+      Runtime: java11
+      Description: Java function
+      MemorySize: 256
+      Timeout: 60
+      Policies:
+        S3ReadPolicy:
+          BucketName:
+            Ref: AppBucketName
+      Events:
+        S3NewObjectEvent:
+          Type: S3
+          Properties:
+            Bucket:
+              Ref: AppBucket
+            Events: s3:ObjectCreated:*
+            Filter:
+              S3Key:
+                Rules:
+                - Name: prefix
+                  Value: inbound/citi
+    Metadata:
+      SamResourceId: ReportGenerator
+  LambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName:
+        Fn::GetAtt:
+        - ReportGenerator
+        - Arn
+      Action: lambda:InvokeFunction
+      Principal: s3.amazonaws.com
+      SourceAccount:
+        Fn::Sub: ${AWS::AccountId}
+      SourceArn:
+        Fn::GetAtt:
+        - AppBucket
+        - Arn
+    Metadata:
+      SamResourceId: LambdaInvokePermission
+  AppBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName:
+        Ref: AppBucketName
+    Metadata:
+      SamResourceId: AppBucket
