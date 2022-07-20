@@ -21,8 +21,11 @@ Resources:
       Policies:
         S3ReadPolicy:
           BucketName: !Ref AppBucketName
+      Tracing: Active
+      Layers:
+        - !Ref libs
       Events:
-        S3NewObjectEvent:
+        S3NewObjectEventForCITI:
           Type: S3
           Properties:
             Bucket: !Ref AppBucket
@@ -32,6 +35,29 @@ Resources:
                 Rules:
                   - Name: prefix
                     Value: "inbound/citi"
+                  - Name: suffix
+                    Value: ".csv"
+        S3NewObjectEventForHSBC:
+          Type: S3
+          Properties:
+            Bucket: !Ref AppBucket
+            Events: s3:ObjectCreated:*
+            Filter:
+              S3Key:
+                Rules:
+                  - Name: prefix
+                    Value: "inbound/hsbc"
+                  - Name: suffix
+                    Value: ".csv"
+                  
+  libs:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: lambda-java-s3-dynamo-lib
+      Description: Dependencies for the Java S3 sample app.
+      ContentUri: build/lambda-java-s3-dynamo-1.0-SNAPSHOT.zip
+      CompatibleRuntimes:
+        - java11
 
   LambdaInvokePermission:
     Type: 'AWS::Lambda::Permission'

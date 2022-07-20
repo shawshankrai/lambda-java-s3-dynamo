@@ -54,4 +54,4 @@ java {
     targetCompatibility = JavaVersion.VERSION_11
 }
 
-build.dependsOn packageBig
+build.dependsOn packageSmall
