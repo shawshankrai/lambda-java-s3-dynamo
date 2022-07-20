@@ -12,7 +12,7 @@ Resources:
   ReportGenerator:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: build/distributions/lambda-events-1.0-SNAPSHOT.zip
+      CodeUri: build/distributions/lambda-java-s3-dynamo-1.0-SNAPSHOT.zip
       Handler: handler.Handler
       Runtime: java11
       Description: Java function
