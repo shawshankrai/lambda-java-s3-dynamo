@@ -1,6 +1,5 @@
 package utils;
 
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 
@@ -9,8 +8,8 @@ import com.opencsv.CSVWriter;
 
 public class CsvUtils {
     
-    public static CSVReader getReader(InputStream in) {
-        return new CSVReader(new InputStreamReader(in));
+    public static CSVReader getReader(InputStreamReader in) {
+        return new CSVReader(in);
     }
         
     public static CSVWriter getWriter(OutputStreamWriter  streamWriter) {
