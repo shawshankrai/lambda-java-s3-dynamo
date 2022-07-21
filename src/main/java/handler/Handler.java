@@ -44,7 +44,7 @@ public class Handler implements RequestHandler<S3Event, String> {
             String dstBucket = srcBucket;
             String dstKey = srcKey.replace("inbound", "outbound");
 
-            // Download the image from S3 into a stream
+            // Download the file from S3 into a stream
             logger.log("S3Client Creation Started");
             S3Client s3Client = S3Client.create();
             logger.log("S3Client Created");
