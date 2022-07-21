@@ -1,6 +1,10 @@
 package handler;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -13,10 +17,12 @@ import com.amazonaws.services.lambda.runtime.events.models.s3.S3EventNotificatio
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.GetObjectRequest;
+import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3Object;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.opencsv.CSVReader;
+import com.opencsv.CSVWriter;
 
 import utils.CsvUtils;
 
@@ -49,12 +55,17 @@ public class Handler implements RequestHandler<S3Event, String> {
             CSVReader reader = CsvUtils.getReader(objectData);
             List<String[]> rows = reader.readAll();
 
-            rows.stream()
-                .flatMap(Arrays::stream)
-                .collect(Collectors.toList())
-                .forEach(element -> logger.log("Elements: " + element));
-
-            logger.log("Dest Key and Bucket:" + dstKey + ", " + dstBucket);
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(outputStream, StandardCharsets.UTF_8);
+            
+            try(CSVWriter writer = CsvUtils.getWriter(outputStreamWriter)) {
+                writer.writeAll(rows);
+                writer.flush();
+                ObjectMetadata meta = new ObjectMetadata();
+                meta.setContentLength(outputStream.toByteArray().length);
+                
+                s3Client.putObject(dstBucket, dstKey, new ByteArrayInputStream(outputStream.toByteArray()), meta);
+            }
 
             return "Ok";
 

@@ -12,14 +12,19 @@ Resources:
   ReportGenerator:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: s3://aws-lambda-code-location-shashank-iam/e4fb1681372f9c8dd3aaf8feb24d261b
+      CodeUri: s3://aws-lambda-code-location-shashank-iam/f6417b988bd05170e5446cb30f5a692f
       Handler: handler.Handler
       Runtime: java11
       Description: Java function
       MemorySize: 256
       Timeout: 60
       Policies:
-        S3ReadPolicy:
+      - AWSLambdaBasicExecutionRole
+      - AWSLambda_ReadOnlyAccess
+      - AWSXrayWriteOnlyAccess
+      - AWSLambdaVPCAccessExecutionRole
+      - AmazonS3FullAccess
+      - S3ReadPolicy:
           BucketName:
             Ref: AppBucketName
       Tracing: Active
@@ -59,7 +64,7 @@ Resources:
     Properties:
       LayerName: lambda-java-s3-dynamo-lib
       Description: Dependencies for the Java S3 sample app.
-      ContentUri: s3://aws-lambda-code-location-shashank-iam/11bbc98079794ae749e3580e8d68b971
+      ContentUri: s3://aws-lambda-code-location-shashank-iam/124b5d02dd8d052bdbfb7c141614d9bc
       CompatibleRuntimes:
       - java11
     Metadata:

@@ -19,7 +19,12 @@ Resources:
       MemorySize: 256
       Timeout: 60
       Policies:
-        S3ReadPolicy:
+       - AWSLambdaBasicExecutionRole
+       - AWSLambda_ReadOnlyAccess
+       - AWSXrayWriteOnlyAccess
+       - AWSLambdaVPCAccessExecutionRole
+       - AmazonS3FullAccess
+       - S3ReadPolicy:
           BucketName: !Ref AppBucketName
       Tracing: Active
       Layers:
