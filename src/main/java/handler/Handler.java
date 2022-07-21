@@ -45,7 +45,7 @@ public class Handler implements RequestHandler<S3Event, String> {
             String dstBucket = srcBucket;
             String dstKey = srcKey.replace("inbound", "outbound");
 
-            // Download the image from S3 into a stream
+            // Download the csv from S3 into a stream
             AmazonS3 s3Client = AmazonS3ClientBuilder.defaultClient();
             S3Object s3Object = s3Client.getObject(new GetObjectRequest(
               srcBucket, srcKey));
@@ -64,6 +64,7 @@ public class Handler implements RequestHandler<S3Event, String> {
                 ObjectMetadata meta = new ObjectMetadata();
                 meta.setContentLength(outputStream.toByteArray().length);
                 
+                // write stream into s3
                 s3Client.putObject(dstBucket, dstKey, new ByteArrayInputStream(outputStream.toByteArray()), meta);
             }
 
