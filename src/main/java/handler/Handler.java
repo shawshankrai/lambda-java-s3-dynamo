@@ -1,11 +1,7 @@
 package handler;
 
-import java.io.ByteArrayOutputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
@@ -14,16 +10,15 @@ import com.amazonaws.services.lambda.runtime.events.S3Event;
 import com.amazonaws.services.lambda.runtime.events.models.s3.S3EventNotification;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.opencsv.CSVReader;
-import com.opencsv.CSVWriter;
 
-import software.amazon.awssdk.core.ResponseInputStream;
-import software.amazon.awssdk.core.sync.RequestBody;
+import model.Row;
+import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
+import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
+import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.GetObjectRequest;
-import software.amazon.awssdk.services.s3.model.GetObjectResponse;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-import utils.CsvUtils;
+import software.amazon.awssdk.services.s3.model.PutObjectResponse;
+import utils.DynamoUtils;
+import utils.S3Utils;
 
 // Handler value: handler.Handler
 public class Handler implements RequestHandler<S3Event, String> {
@@ -33,7 +28,7 @@ public class Handler implements RequestHandler<S3Event, String> {
     public String handleRequest(S3Event s3event, Context context) {
         try {
             LambdaLogger logger = context.getLogger();
-            logger.log("Received Event: "+ gson.toJson(s3event));
+            logger.log("Received Event: " + gson.toJson(s3event));
             S3EventNotification.S3EventNotificationRecord record = s3event.getRecords().get(0);
 
             String srcBucket = record.getS3().getBucket().getName();
@@ -46,31 +41,32 @@ public class Handler implements RequestHandler<S3Event, String> {
 
             // Download the file from S3 into a stream
             logger.log("S3Client Creation Started");
-            S3Client s3Client = S3Client.create();
+            S3Client s3Client = S3Utils.getS3Client();
             logger.log("S3Client Created");
-            ResponseInputStream<GetObjectResponse> s3Object = s3Client.getObject(GetObjectRequest.builder().bucket(srcBucket).key(srcKey).build());
-            logger.log("Received File");
-            InputStreamReader objectData = new InputStreamReader(s3Object);
-            
-            CSVReader reader = CsvUtils.getReader(objectData);
-            List<String[]> rows = reader.readAll();
-            logger.log("File converted to rows");
 
+            List<String[]> rows = S3Utils.getFileFromS3Bucket(s3Client, srcBucket, srcKey);
+            logger.log("File received File and converted to rows");
+
+            // Upload the file from S3 into a stream
             logger.log("Started Writing");
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(outputStream, StandardCharsets.UTF_8);
-            
-            try(CSVWriter writer = CsvUtils.getWriter(outputStreamWriter)) {
-                writer.writeAll(rows);
-                writer.flush();
-                logger.log("Write Complete");
-                logger.log("File Upload Started:" +dstBucket+"-"+dstKey);
-                PutObjectRequest objectRequest = PutObjectRequest.builder().bucket(dstBucket).key(dstKey).build();
-                s3Client.putObject(objectRequest, RequestBody.fromByteBuffer(ByteBuffer.wrap(outputStream.toByteArray())));                
-            }
+            PutObjectResponse uploadResponse = S3Utils.uploadFileToS3Bucket(s3Client, dstBucket, dstKey, rows);
+            logger.log("File Uploaded:" + dstBucket + "-" + dstKey);
 
-            logger.log("File Uploaded:" +dstBucket+"-"+dstKey);
-            return "Ok";
+            logger.log("Rows transformed to objects");
+            List<Row> dbRecords = rows.stream().map(row -> new Row(row[0], row[1], row[2], row[3]))
+                    .collect(Collectors.toList());
+
+            // Write transformed rows to dynamo db
+            logger.log("DynamoDbEnhancedClient Creation Started");
+            DynamoDbEnhancedClient enhancedClient = DynamoUtils.getDynamoClient();
+            logger.log("DynamoDbEnhancedClient Created");
+            DynamoDbTable<Row> mappedTable = enhancedClient.table("Row", TableSchema.fromBean(Row.class));
+
+            logger.log("Started Batch Write");
+            Integer pendingRecords = DynamoUtils.partitionedWrite(Row.class, dbRecords, enhancedClient, mappedTable);
+            logger.log("Total pending records after batched write: " + pendingRecords);
+
+            return uploadResponse.toString();
 
         } catch (Exception e) {
             throw new RuntimeException(e);
