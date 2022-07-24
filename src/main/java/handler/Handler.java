@@ -53,7 +53,7 @@ public class Handler implements RequestHandler<S3Event, String> {
             logger.log("File Uploaded:" + dstBucket + "-" + dstKey);
 
             logger.log("Rows transformed to objects");
-            List<Row> dbRecords = rows.stream().map(row -> new Row(row[0], row[1], row[2], row[3]))
+            List<Row> dbRecords = rows.stream().skip(1).map(row -> new Row(row[0], row[1], row[2], row[3]))
                     .collect(Collectors.toList());
 
             // Write transformed rows to dynamo db
@@ -67,7 +67,6 @@ public class Handler implements RequestHandler<S3Event, String> {
             logger.log("Total pending records after batched write: " + pendingRecords);
 
             return uploadResponse.toString();
-
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

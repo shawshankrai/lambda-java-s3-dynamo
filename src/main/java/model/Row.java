@@ -11,6 +11,9 @@ public class Row {
     private String data;
     private String meta;
 
+    public Row() {
+    }
+
     public Row(String id, String header, String data, String meta) {
         this.id = id;
         this.header = header;

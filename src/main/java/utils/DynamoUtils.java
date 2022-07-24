@@ -2,14 +2,13 @@ package utils;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import com.google.common.collect.Lists;
 
-import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
 import software.amazon.awssdk.enhanced.dynamodb.model.BatchWriteItemEnhancedRequest;
 import software.amazon.awssdk.enhanced.dynamodb.model.WriteBatch;
-import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 
 public class DynamoUtils {
@@ -17,12 +16,7 @@ public class DynamoUtils {
     private static final int BATCH_SIZE = 25;
 
     public static DynamoDbEnhancedClient getDynamoClient() {
-        ProfileCredentialsProvider credentialsProvider = ProfileCredentialsProvider.create();
-        Region region = Region.US_EAST_1;
-        DynamoDbClient ddb = DynamoDbClient.builder()
-                .region(region)
-                .credentialsProvider(credentialsProvider)
-                .build();
+        DynamoDbClient ddb = DynamoDbClient.create();
 
         return DynamoDbEnhancedClient.builder()
                 .dynamoDbClient(ddb)

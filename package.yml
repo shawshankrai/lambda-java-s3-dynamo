@@ -12,7 +12,7 @@ Resources:
   ReportGenerator:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: s3://aws-lambda-code-location-shashank-iam/a39b893e5e0f7d402c02f848963de749
+      CodeUri: s3://aws-lambda-code-location-shashank-iam/08c3c7f671f562d6d62f38ae0489f43f
       Handler: handler.Handler
       Runtime: java11
       Description: Java function
@@ -27,6 +27,9 @@ Resources:
       - S3ReadPolicy:
           BucketName:
             Ref: AppBucketName
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: DynamoDBTable
       Tracing: Active
       Layers:
       - Ref: libs
@@ -64,7 +67,7 @@ Resources:
     Properties:
       LayerName: lambda-java-s3-dynamo-lib
       Description: Dependencies for the Java S3 sample app.
-      ContentUri: s3://aws-lambda-code-location-shashank-iam/f011427f674405192d3a2f996d30bf29
+      ContentUri: s3://aws-lambda-code-location-shashank-iam/1278f32ad427fed83b4e73ecdcb93445
       CompatibleRuntimes:
       - java11
     Metadata:
@@ -93,3 +96,20 @@ Resources:
         Ref: AppBucketName
     Metadata:
       SamResourceId: AppBucket
+  DynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    Properties:
+      TableName: Row
+      AttributeDefinitions:
+      - AttributeName: id
+        AttributeType: S
+      KeySchema:
+      - AttributeName: id
+        KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+      ProvisionedThroughput:
+        ReadCapacityUnits: 0
+        WriteCapacityUnits: 0
+    Metadata:
+      SamResourceId: DynamoDBTable
