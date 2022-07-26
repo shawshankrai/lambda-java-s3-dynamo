@@ -8,11 +8,19 @@ Parameters:
     Type: String
     Description: 'REQUIRED: Unique S3 bucket name to use for the app.'
     Default: aws-report-gen-shashank-iam
+  AppTopicName:
+    Type: String
+    Description: 'REQUIRED: Unique SNS Topic name to use for the app.'
+    Default: aws-report-gen-shashank-iam
+  AppSubscriptionName:
+    Type: String
+    Description: 'REQUIRED: Default Subscription for the app.'
+    Default: shashank.rai92@gmail.com
 Resources:
   ReportGenerator:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: s3://aws-lambda-code-location-shashank-iam/08c3c7f671f562d6d62f38ae0489f43f
+      CodeUri: s3://aws-lambda-code-location-shashank-iam/aacc5f236e9982553cb6186fff3490c9
       Handler: handler.Handler
       Runtime: java11
       Description: Java function
@@ -30,6 +38,9 @@ Resources:
       - DynamoDBCrudPolicy:
           TableName:
             Ref: DynamoDBTable
+      - SNSPublishMessagePolicy:
+          TopicName:
+            Ref: AppTopicName
       Tracing: Active
       Layers:
       - Ref: libs
@@ -67,7 +78,7 @@ Resources:
     Properties:
       LayerName: lambda-java-s3-dynamo-lib
       Description: Dependencies for the Java S3 sample app.
-      ContentUri: s3://aws-lambda-code-location-shashank-iam/1278f32ad427fed83b4e73ecdcb93445
+      ContentUri: s3://aws-lambda-code-location-shashank-iam/37b63c907c57ac522b13cfa7e1b4fdd2
       CompatibleRuntimes:
       - java11
     Metadata:
@@ -113,3 +124,36 @@ Resources:
         WriteCapacityUnits: 0
     Metadata:
       SamResourceId: DynamoDBTable
+  EventInvokeConfig:
+    Type: AWS::Lambda::EventInvokeConfig
+    Properties:
+      FunctionName:
+        Ref: ReportGenerator
+      Qualifier: $LATEST
+      MaximumEventAgeInSeconds: 60
+      MaximumRetryAttempts: 0
+      DestinationConfig:
+        OnSuccess:
+          Destination:
+            Ref: SnsTopicSam
+        OnFailure:
+          Destination:
+            Ref: SnsTopicSam
+    Metadata:
+      SamResourceId: EventInvokeConfig
+  SnsTopicSam:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName:
+        Ref: AppTopicName
+      DisplayName: Report Generation Status
+      Subscription:
+      - Protocol: email
+        Endpoint:
+          Ref: AppSubscriptionName
+      Tags:
+      - Key: Name
+        Value:
+          Ref: AppTopicName
+    Metadata:
+      SamResourceId: SnsTopicSam

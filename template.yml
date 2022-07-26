@@ -8,6 +8,14 @@ Parameters:
     Type: String
     Description: "REQUIRED: Unique S3 bucket name to use for the app."
     Default: "aws-report-gen-shashank-iam"
+  AppTopicName:
+    Type: String
+    Description: "REQUIRED: Unique SNS Topic name to use for the app."
+    Default: "aws-report-gen-shashank-iam"
+  AppSubscriptionName:
+    Type: String
+    Description: "REQUIRED: Default Subscription for the app."
+    Default: "shashank.rai92@gmail.com"
 Resources:
   ReportGenerator:
     Type: AWS::Serverless::Function
@@ -28,6 +36,8 @@ Resources:
           BucketName: !Ref AppBucketName
        - DynamoDBCrudPolicy:
           TableName: !Ref DynamoDBTable
+       - SNSPublishMessagePolicy:
+           TopicName: !Ref AppTopicName
       Tracing: Active
       Layers:
         - !Ref libs
@@ -95,3 +105,28 @@ Resources:
       ProvisionedThroughput:
         ReadCapacityUnits: 0
         WriteCapacityUnits: 0
+
+  EventInvokeConfig:
+    Type: AWS::Lambda::EventInvokeConfig
+    Properties:
+      FunctionName: !Ref ReportGenerator
+      Qualifier: "$LATEST"
+      MaximumEventAgeInSeconds: 60
+      MaximumRetryAttempts: 0
+      DestinationConfig:
+        OnSuccess:
+          Destination: !Ref SnsTopicSam
+        OnFailure:
+          Destination: !Ref SnsTopicSam
+
+  SnsTopicSam:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Ref AppTopicName
+      DisplayName: "Report Generation Status"
+      Subscription:
+        - Protocol: email
+          Endpoint: !Ref AppSubscriptionName
+      Tags:
+        - Key: Name
+          Value: !Ref AppTopicName
