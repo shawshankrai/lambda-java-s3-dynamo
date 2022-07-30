@@ -1,3 +1,4 @@
 #!/bin/bash
 set -eo pipefail
-mvn clean install
+gradle clean
+gradle build

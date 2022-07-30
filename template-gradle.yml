@@ -20,7 +20,7 @@ Resources:
   ReportGenerator:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: target/lambda-java-s3-dynamo-1.0-SNAPSHOT-shaded.pom
+      CodeUri: build/distributions/lambda-java-s3-dynamo-1.0-SNAPSHOT.zip
       Handler: handler.Handler
       Runtime: java11
       Description: Java function
@@ -38,9 +38,9 @@ Resources:
           TableName: !Ref DynamoDBTable
        - SNSPublishMessagePolicy:
            TopicName: !Ref AppTopicName
-      # Tracing: Active
-      # Layers:
-      #   - !Ref libs
+      Tracing: Active
+      Layers:
+        - !Ref libs
       Events:
         S3NewObjectEventForCITI:
           Type: S3
@@ -67,14 +67,14 @@ Resources:
                   - Name: suffix
                     Value: ".csv"
                   
-  # libs:
-  #   Type: AWS::Serverless::LayerVersion
-  #   Properties:
-  #     LayerName: lambda-java-s3-dynamo-lib
-  #     Description: Dependencies for the Java S3 sample app.
-  #     ContentUri: build/lambda-java-s3-dynamo-1.0-SNAPSHOT.zip
-  #     CompatibleRuntimes:
-  #       - java11
+  libs:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: lambda-java-s3-dynamo-lib
+      Description: Dependencies for the Java S3 sample app.
+      ContentUri: build/lambda-java-s3-dynamo-1.0-SNAPSHOT.zip
+      CompatibleRuntimes:
+        - java11
 
   LambdaInvokePermission:
     Type: 'AWS::Lambda::Permission'
