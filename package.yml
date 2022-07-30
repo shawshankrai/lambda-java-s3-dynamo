@@ -20,7 +20,7 @@ Resources:
   ReportGenerator:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: s3://aws-lambda-code-location-shashank-iam/6229cc9a898bf27b0bb37099bee94eb9
+      CodeUri: s3://aws-lambda-code-location-shashank-iam/5fa2c1d4dbd50fe1b9b53314a2fc8f23
       Handler: handler.Handler
       Runtime: java11
       Description: Java function
