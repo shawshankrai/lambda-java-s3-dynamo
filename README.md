@@ -6,7 +6,7 @@ For Maven Deployment
 
     RUN 1-deploy.sh to trigger AWS SAM deployment
 
-For Maven Deployment
+For Gradle Deployment
 
     RUN 2-cleanBuild-gradle.sh for downloading dependencies
 
