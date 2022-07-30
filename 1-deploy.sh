@@ -5,7 +5,7 @@ ARTIFACT_BUCKET=aws-lambda-code-location-shashank-iam
 PROFILE=shashank-iam
 REGION=us-east-1
 STACK=aws-reporting-stack-1
-OUTPUTFILE=package.yml
+OUTPUTFILE=packaged.yaml
 
 mvn package
 
