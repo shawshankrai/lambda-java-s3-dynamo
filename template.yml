@@ -20,7 +20,7 @@ Resources:
   ReportGenerator:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: target/lambda-java-s3-dynamo-1.0-SNAPSHOT-shaded.pom
+      CodeUri: target/lambda-java-s3-dynamo-1.0-SNAPSHOT.jar
       Handler: handler.Handler
       Runtime: java11
       Description: Java function

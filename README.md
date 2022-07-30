@@ -1,8 +1,18 @@
 # lambda-java-s3-dynamo
 
-RUN cleanBuild.sh for downloading dependencies
+For Maven Deployment
 
-RUN build-layer.sh for creating layer
+    RUN 1-cleanBuild.sh for downloading dependencies
 
-RUN deploy.sh to trigger AWS SAM deployment
+    RUN 1-deploy.sh to trigger AWS SAM deployment
+
+For Maven Deployment
+
+    RUN 2-cleanBuild-gradle.sh for downloading dependencies
+
+    RUN 2-build-layer-gradle.sh for creating layer
+
+    RUN 2-deploy-gradle.sh to trigger AWS SAM deployment
+
+
 

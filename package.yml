@@ -20,7 +20,7 @@ Resources:
   ReportGenerator:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: s3://aws-lambda-code-location-shashank-iam/aacc5f236e9982553cb6186fff3490c9
+      CodeUri: s3://aws-lambda-code-location-shashank-iam/6229cc9a898bf27b0bb37099bee94eb9
       Handler: handler.Handler
       Runtime: java11
       Description: Java function
@@ -41,9 +41,6 @@ Resources:
       - SNSPublishMessagePolicy:
           TopicName:
             Ref: AppTopicName
-      Tracing: Active
-      Layers:
-      - Ref: libs
       Events:
         S3NewObjectEventForCITI:
           Type: S3
@@ -73,16 +70,6 @@ Resources:
                   Value: .csv
     Metadata:
       SamResourceId: ReportGenerator
-  libs:
-    Type: AWS::Serverless::LayerVersion
-    Properties:
-      LayerName: lambda-java-s3-dynamo-lib
-      Description: Dependencies for the Java S3 sample app.
-      ContentUri: s3://aws-lambda-code-location-shashank-iam/37b63c907c57ac522b13cfa7e1b4fdd2
-      CompatibleRuntimes:
-      - java11
-    Metadata:
-      SamResourceId: libs
   LambdaInvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
