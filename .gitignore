@@ -250,4 +250,7 @@ $RECYCLE.BIN/
 .gradle
 bin
 
+# Terraform
+.terraform
+.terraform.lock.hcl
 # End of https://www.gitignore.io/api/osx,linux,python,windows,pycharm,visualstudiocode
