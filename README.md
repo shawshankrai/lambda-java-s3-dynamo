@@ -1,12 +1,12 @@
 # lambda-java-s3-dynamo
 
-For Maven Deployment
+For Maven SAM Deployment
 
     RUN 1-cleanBuild.sh for downloading dependencies
 
     RUN 1-deploy.sh to trigger AWS SAM deployment
 
-For Gradle Deployment
+For Gradle SAM Deployment
 
     RUN 2-cleanBuild-gradle.sh for downloading dependencies
 
@@ -14,5 +14,11 @@ For Gradle Deployment
 
     RUN 2-deploy-gradle.sh to trigger AWS SAM deployment
 
-
+For Terraform deployment
+    
+    RUN terraform init
+    
+    RUN terraform plan
+    
+    RUN terraform apply
 
